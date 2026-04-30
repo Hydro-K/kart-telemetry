@@ -19,7 +19,8 @@ echo "======================================================"
 echo "[1/8] Installing system packages..."
 apt-get update -qq
 apt-get install -y python3-pip python3-venv hostapd dnsmasq \
-    sqlite3 iptables-persistent git curl
+    sqlite3 iptables-persistent git curl \
+    libarrow-dev libparquet-dev  # needed to build pyarrow (required by libxrk)
 
 # ── 2. Python virtual environment ───────────────────────────
 echo "[2/8] Creating Python venv and installing dependencies..."
@@ -28,8 +29,13 @@ python3 -m venv venv
 source venv/bin/activate
 pip install --quiet --upgrade pip
 pip install --quiet -r requirements.txt
-# libxrk needs Cython build tools on Pi; pre-built wheel may not be available
-pip install --quiet libxrk || echo "Warning: libxrk not available for this platform — XRK upload will be disabled"
+# libxrk is optional — enables native .xrk file uploads.
+# It requires pyarrow which must be built from source on Pi.
+# libarrow-dev was installed above to make this possible.
+echo "  Attempting to install libxrk (XRK file support)..."
+pip install --quiet libxrk \
+  && echo "  libxrk installed — .xrk uploads enabled." \
+  || echo "  Warning: libxrk unavailable — .xrk upload disabled. Use CSV ZIP exports instead."
 deactivate
 
 # Create data directory with correct ownership

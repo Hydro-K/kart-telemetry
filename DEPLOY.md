@@ -36,13 +36,16 @@ sudo bash setup_pi.sh
 ```
 
 This will (~10-15 minutes):
-1. Install system packages (hostapd, dnsmasq, Python, etc.)
+1. Install system packages (hostapd, dnsmasq, Python, libarrow-dev, etc.)
 2. Create Python venv + install dependencies
-3. Initialize the SQLite database (Kart #6 and Kart #70 pre-seeded)
-4. Install and start Ollama, pull `phi3:mini` (~2.3GB download)
-5. Configure the WiFi hotspot (SSID: `KartTelemetry`, password: `PurdueKart25`)
-6. Set up iptables redirect port 80 → 5000
-7. Install the systemd service (auto-starts on boot)
+3. Attempt to install `libxrk` for native `.xrk` file support (optional — requires libarrow-dev build)
+4. Initialize the SQLite database (Kart #6 and Kart #70 pre-seeded)
+5. Install and start Ollama, pull `phi3:mini` (~2.3GB download)
+6. Configure the WiFi hotspot (SSID: `KartTelemetry`, password: `PurdueKart25`)
+7. Set up iptables redirect port 80 → 5000
+8. Install the systemd service (auto-starts on boot)
+
+> **Note on XRK support:** The Pi uses a 32-bit ARM userspace which makes building PyArrow (a libxrk dependency) tricky. If libxrk fails to install, `.xrk` uploads will be disabled but all CSV ZIP exports will work fine. Use AiM RaceStudio's "Export to CSV" option when pulling data from the logger.
 
 ---
 

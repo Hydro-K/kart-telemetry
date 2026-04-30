@@ -3,4 +3,7 @@ pandas>=2.0
 numpy>=1.24
 requests>=2.31
 gunicorn>=21.2
-libxrk>=0.12
+# libxrk is optional — needed only for .xrk uploads.
+# On Raspberry Pi install it separately via setup_pi.sh (requires libarrow-dev).
+# On Windows: pip install libxrk
+# libxrk>=0.12
