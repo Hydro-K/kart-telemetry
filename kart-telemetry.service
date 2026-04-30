@@ -1,0 +1,26 @@
+[Unit]
+Description=Kart Telemetry Dashboard — Purdue EV Grand Prix
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/kart-telemetry
+Environment="FLASK_ENV=production"
+Environment="OLLAMA_URL=http://localhost:11434"
+Environment="OLLAMA_MODEL=phi3:mini"
+# gunicorn: 2 workers, timeout 120s for big CSV uploads, bind on all interfaces port 5000
+ExecStart=/home/pi/kart-telemetry/venv/bin/gunicorn \
+    --workers 2 \
+    --timeout 120 \
+    --bind 0.0.0.0:5000 \
+    --access-logfile - \
+    --error-logfile - \
+    "app:create_app()"
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

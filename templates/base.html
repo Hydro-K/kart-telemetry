@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Kart Telemetry{% endblock %} — Purdue EV Grand Prix</title>
+  <link rel="stylesheet" href="/static/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/vendor/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+
+<!-- Top Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary px-3 py-2">
+  <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+    <span class="badge bg-danger px-2 py-1" style="font-size:.7rem;letter-spacing:.1em">PURDUE EV</span>
+    <span style="color:#00d4aa">KART TELEMETRY</span>
+  </a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navMain">
+    <ul class="navbar-nav me-auto ms-3 gap-1">
+      <li class="nav-item">
+        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/"><i class="bi bi-house-fill"></i> Sessions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if 'compare' in request.path and 'lap' not in request.path %}active{% endif %}" href="/compare"><i class="bi bi-bar-chart-fill"></i> Kart Compare</a>
+      </li>
+    </ul>
+    <!-- AI status badge -->
+    <div id="ai-status-badge" class="me-3 d-none d-lg-flex align-items-center gap-2">
+      <span id="ai-dot" class="rounded-circle d-inline-block" style="width:8px;height:8px;background:#555"></span>
+      <small id="ai-status-text" class="text-muted">AI Engineer</small>
+    </div>
+    <!-- Upload button -->
+    {% block nav_extra %}{% endblock %}
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    {% block sidebar %}{% endblock %}
+    <main class="{% block main_class %}col{% endblock %} px-3 py-3" style="min-height:calc(100vh - 60px)">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<!-- New Session Modal -->
+<div class="modal fade" id="newSessionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title"><i class="bi bi-plus-circle-fill text-success me-2"></i>New Session</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">SESSION NAME</label>
+          <input type="text" id="ns-name" class="form-control bg-dark border-secondary" placeholder="e.g. Morning Practice 4/26">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">KART</label>
+          <select id="ns-kart" class="form-select bg-dark border-secondary">
+            <!-- Populated by main.js from /api/karts -->
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">DATE (optional)</label>
+          <input type="date" id="ns-date" class="form-control bg-dark border-secondary">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">NOTES (optional)</label>
+          <textarea id="ns-notes" class="form-control bg-dark border-secondary" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="ns-create-btn"><i class="bi bi-plus-circle me-1"></i>Create Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/vendor/bootstrap.bundle.min.js"></script>
+<script src="/static/vendor/plotly.min.js"></script>
+<script src="/static/js/main.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

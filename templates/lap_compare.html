@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Lap Compare{% endblock %}
+
+{% block content %}
+<div id="session-id" data-id="{{ session_id }}" class="d-none"></div>
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/dashboard/{{ session_id }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <div>
+    <h5 class="mb-0 fw-bold">Lap Comparison</h5>
+    <small class="text-secondary">Overlay two laps to find where time is gained or lost</small>
+  </div>
+  <!-- Lap selectors -->
+  <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge" style="background:#00d4aa;color:#000">LAP A</span>
+      <select id="lap1-select" class="form-select form-select-sm bg-dark border-secondary" style="width:auto"></select>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge" style="background:#ff6b35;color:#000">LAP B</span>
+      <select id="lap2-select" class="form-select form-select-sm bg-dark border-secondary" style="width:auto"></select>
+    </div>
+    <button id="compare-btn" class="btn btn-sm btn-success"><i class="bi bi-layers me-1"></i>Compare</button>
+  </div>
+</div>
+
+<!-- Lap time header cards -->
+<div class="row g-3 mb-3" id="compare-headers">
+  <div class="col-6">
+    <div class="card border-0 h-100 text-center p-2" style="background:#0a2a22">
+      <div id="lap1-time" class="fw-bold" style="color:#00d4aa;font-size:1.4rem">--:--</div>
+      <div class="small text-secondary">LAP A TIME</div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="card border-0 h-100 text-center p-2" style="background:#2a1a0a">
+      <div id="lap2-time" class="fw-bold" style="color:#ff6b35;font-size:1.4rem">--:--</div>
+      <div class="small text-secondary">LAP B TIME</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Speed overlay ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Speed Overlay</span>
+    <small class="text-secondary ms-2">Both laps on the same distance axis</small>
+  </div>
+  <div class="card-body p-2">
+    <div id="compare-speed-chart" style="height:240px"></div>
+  </div>
+</div>
+
+<!-- ── Delta time ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Delta Time</span>
+    <small class="text-secondary ms-2">
+      <span style="color:#00d4aa">Green = Lap A faster</span> &nbsp;
+      <span style="color:#ff6b35">Orange = Lap B faster</span>
+    </small>
+  </div>
+  <div class="card-body p-2">
+    <div id="compare-delta-chart" style="height:180px"></div>
+  </div>
+</div>
+
+<!-- ── Inline G overlay ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Longitudinal G Overlay</span>
+    <small class="text-secondary ms-2">Braking and acceleration differences</small>
+  </div>
+  <div class="card-body p-2">
+    <div id="compare-inlineg-chart" style="height:200px"></div>
+  </div>
+</div>
+
+<!-- ── Track maps side by side ── -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="badge me-1" style="background:#00d4aa;color:#000">A</span>
+        <span id="trackmap-lap1-label" class="fw-semibold">Lap A Track Map</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="compare-trackmap-lap1" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="badge me-1" style="background:#ff6b35;color:#000">B</span>
+        <span id="trackmap-lap2-label" class="fw-semibold">Lap B Track Map</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="compare-trackmap-lap2" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/lap_compare.js"></script>
+{% endblock %}

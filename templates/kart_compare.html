@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Kart Compare{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <div>
+    <h5 class="mb-0 fw-bold">Kart Head-to-Head</h5>
+    <small class="text-secondary">Compare both karts across all sessions</small>
+  </div>
+  <button id="ai-analyze-btn" class="btn btn-sm btn-outline-warning ms-auto">
+    <i class="bi bi-robot me-1"></i>AI Analysis
+  </button>
+</div>
+
+<!-- ── Row 1: Stat Cards side by side ── -->
+<div class="row g-3 mb-3" id="kart-stat-cards">
+  <div class="col-12 text-center text-secondary py-4">
+    <div class="spinner-border spinner-border-sm me-2"></div>Loading kart data…
+  </div>
+</div>
+
+<!-- ── Row 2: Overlaid lap time history ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Lap Time History — All Sessions</span>
+    <small class="text-secondary ms-2">Lower is faster — <span style="color:#00d4aa">■ Kart 1</span> <span style="color:#ff6b35">■ Kart 2</span></small>
+  </div>
+  <div class="card-body p-2">
+    <div id="compare-laptimes-chart" style="height:260px"></div>
+  </div>
+</div>
+
+<!-- ── Row 3: G-G Diagrams ── -->
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span style="color:#00d4aa">■</span>
+        <span class="fw-semibold ms-1">Kart 1 — Traction Circle</span>
+        <small class="text-secondary ms-2">Best session laps</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="gg-kart1" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span style="color:#ff6b35">■</span>
+        <span class="fw-semibold ms-1">Kart 2 — Traction Circle</span>
+        <small class="text-secondary ms-2">Best session laps</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="gg-kart2" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 4: Speed trace best lap overlay ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Best Lap Speed Comparison</span>
+    <small class="text-secondary ms-2">Best lap from each kart overlaid — same distance axis</small>
+  </div>
+  <div class="card-body p-2">
+    <div id="compare-speed-chart" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- ── Row 5: Track maps ── -->
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span style="color:#00d4aa">■</span>
+        <span class="fw-semibold ms-1">Kart 1 — Track Map (Best Lap)</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="trackmap-kart1" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span style="color:#ff6b35">■</span>
+        <span class="fw-semibold ms-1">Kart 2 — Track Map (Best Lap)</span>
+      </div>
+      <div class="card-body p-2">
+        <div id="trackmap-kart2" style="height:280px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 6: AI Insight Panel ── -->
+<div class="card bg-dark border-secondary mb-4" id="ai-insight-card">
+  <div class="card-header border-secondary d-flex align-items-center gap-2">
+    <i class="bi bi-robot text-warning"></i>
+    <span class="fw-semibold">Race Engineer Analysis</span>
+    <button id="ai-generate-btn" class="btn btn-sm btn-warning ms-auto">
+      <i class="bi bi-lightning-fill me-1"></i>Analyze Both Karts
+    </button>
+  </div>
+  <div class="card-body">
+    <div id="ai-insight-placeholder" class="text-secondary text-center py-3">
+      <i class="bi bi-robot fs-2 d-block mb-2 text-secondary"></i>
+      Click "Analyze Both Karts" to get an AI race engineer comparison
+    </div>
+    <div id="ai-insight-thinking" class="text-center py-3 d-none">
+      <div class="spinner-border spinner-border-sm text-warning me-2"></div>
+      <span class="text-secondary">Engineer is reviewing the data…</span>
+    </div>
+    <div id="ai-insight-content" class="d-none" style="white-space:pre-wrap;line-height:1.7"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/kart_compare.js"></script>
+{% endblock %}

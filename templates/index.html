@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Sessions{% endblock %}
+
+{% block nav_extra %}
+<button class="btn btn-sm btn-success ms-2" data-bs-toggle="modal" data-bs-target="#newSessionModal">
+  <i class="bi bi-plus-circle me-1"></i>New Session
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Sessions</h4>
+    <small class="text-secondary">Select a session to analyze, or create a new one</small>
+  </div>
+  <a href="/compare" class="btn btn-outline-info btn-sm">
+    <i class="bi bi-bar-chart-fill me-1"></i>Compare Karts
+  </a>
+</div>
+
+<!-- Kart filter tabs (populated by JS after loading kart list) -->
+<ul class="nav nav-pills mb-4" id="kartFilter">
+  <li class="nav-item">
+    <button class="nav-link active" data-kart="all">All Karts</button>
+  </li>
+  <!-- Kart buttons injected by index.js -->
+</ul>
+
+<!-- Sessions grid -->
+<div id="sessions-grid" class="row g-3">
+  <div class="col-12 text-center text-secondary py-5" id="sessions-loading">
+    <div class="spinner-border spinner-border-sm me-2"></div>Loading sessions...
+  </div>
+</div>
+
+<!-- Session card template (hidden) -->
+<template id="session-card-tpl">
+  <div class="col-md-6 col-xl-4 session-card-wrapper">
+    <div class="card bg-dark border-secondary h-100 session-card" style="cursor:pointer;transition:border-color .2s">
+      <div class="card-body">
+        <div class="d-flex align-items-start justify-content-between mb-2">
+          <div>
+            <div class="kart-dot me-2" style="display:inline-block;width:10px;height:10px;border-radius:50%"></div>
+            <span class="kart-name small text-secondary"></span>
+          </div>
+          <div class="dropdown" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-link text-secondary p-0" data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+              <li><a class="dropdown-item upload-btn" href="#"><i class="bi bi-upload me-2"></i>Upload Recording</a></li>
+              <li><a class="dropdown-item replay-btn" href="#"><i class="bi bi-play-circle me-2"></i>Replay</a></li>
+              <li><a class="dropdown-item ai-btn" href="#"><i class="bi bi-robot me-2"></i>Ask AI Engineer</a></li>
+              <li><hr class="dropdown-divider border-secondary"></li>
+              <li><a class="dropdown-item text-danger delete-btn" href="#"><i class="bi bi-trash me-2"></i>Delete Session</a></li>
+            </ul>
+          </div>
+        </div>
+        <h6 class="session-name fw-bold mb-1"></h6>
+        <div class="session-date small text-secondary mb-3"></div>
+        <div class="row g-2 text-center mb-2">
+          <div class="col-3">
+            <div class="stat-val fw-bold best-lap" style="color:#00d4aa;font-size:.95rem"></div>
+            <div class="small text-secondary" style="font-size:.65rem">BEST LAP</div>
+          </div>
+          <div class="col-3">
+            <div class="stat-val fw-bold avg-lap" style="font-size:.95rem"></div>
+            <div class="small text-secondary" style="font-size:.65rem">AVG LAP</div>
+          </div>
+          <div class="col-3">
+            <div class="stat-val fw-bold lap-count" style="font-size:.95rem"></div>
+            <div class="small text-secondary" style="font-size:.65rem">LAPS</div>
+          </div>
+          <div class="col-3">
+            <div class="stat-val fw-bold max-speed" style="font-size:.95rem"></div>
+            <div class="small text-secondary" style="font-size:.65rem">TOP MPH</div>
+          </div>
+        </div>
+        <div class="progress mt-2" style="height:3px">
+          <div class="consistency-bar progress-bar" style="background:#00d4aa"></div>
+        </div>
+        <div class="consistency-label small text-secondary mt-1"></div>
+        <!-- Recordings list / drivers -->
+        <div class="recordings-list mt-2"></div>
+      </div>
+      <div class="card-footer border-secondary d-flex gap-2 p-2">
+        <a class="btn btn-sm btn-outline-info flex-fill analyze-btn" href="#"><i class="bi bi-graph-up me-1"></i>Analyze</a>
+        <button class="btn btn-sm btn-outline-success flex-fill upload-btn2"><i class="bi bi-upload me-1"></i>Upload</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Upload recording modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title"><i class="bi bi-upload text-success me-2"></i>Upload Recording</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary small">Upload a ZIP of an AiM CSV export folder, or a native <code>.xrk</code> file. Multiple uploads add to the same session.</p>
+
+        <!-- Driver selector -->
+        <div class="mb-3">
+          <label class="form-label small text-secondary mb-1">Driver <span class="text-warning">*</span></label>
+          <div class="d-flex gap-2">
+            <input type="radio" class="btn-check" name="upload-driver" id="drv-jayden" value="Jayden" autocomplete="off">
+            <label class="btn btn-outline-secondary btn-sm flex-fill" for="drv-jayden">Jayden</label>
+
+            <input type="radio" class="btn-check" name="upload-driver" id="drv-kolten" value="Kolten" autocomplete="off">
+            <label class="btn btn-outline-secondary btn-sm flex-fill" for="drv-kolten">Kolten</label>
+
+            <input type="radio" class="btn-check" name="upload-driver" id="drv-james" value="James" autocomplete="off">
+            <label class="btn btn-outline-secondary btn-sm flex-fill" for="drv-james">James</label>
+          </div>
+        </div>
+
+        <div id="drop-zone" class="border border-secondary rounded p-4 text-center mb-3" style="border-style:dashed!important;cursor:pointer">
+          <i class="bi bi-cloud-upload fs-2 text-secondary"></i>
+          <div class="mt-2 text-secondary">Drag & drop or click to select</div>
+          <div class="small text-secondary mt-1">.zip or .xrk — max 100 MB</div>
+          <input type="file" id="upload-file-input" accept=".zip,.xrk" class="d-none">
+        </div>
+        <div id="upload-progress" class="d-none">
+          <div class="progress mb-2"><div id="upload-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%"></div></div>
+          <div id="upload-status" class="small text-center text-secondary">Uploading and analyzing…</div>
+        </div>
+        <div id="upload-result" class="d-none alert alert-success"></div>
+        <div id="upload-error" class="d-none alert alert-danger"></div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/index.js"></script>
+{% endblock %}

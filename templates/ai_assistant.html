@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}AI Engineer{% endblock %}
+
+{% block content %}
+<div id="session-id" data-id="{{ session_id }}" class="d-none"></div>
+
+<div class="d-flex align-items-center gap-3 mb-3">
+  <a href="/dashboard/{{ session_id }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <div>
+    <h5 class="mb-0 fw-bold"><i class="bi bi-robot text-warning me-2"></i>Race Engineer AI</h5>
+    <small class="text-secondary">Powered by local Ollama — fully offline</small>
+  </div>
+  <div id="ai-status-pill" class="ms-auto badge bg-secondary">Checking…</div>
+</div>
+
+<!-- Offline warning -->
+<div id="ai-offline-banner" class="alert alert-warning d-none mb-3">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <strong>AI Engineer is offline.</strong> Make sure Ollama is running:
+  <code class="ms-2">ollama serve</code> — then refresh this page.
+</div>
+
+<div class="row g-3" style="height:calc(100vh - 200px);min-height:500px">
+  <!-- Left: session context panel -->
+  <div class="col-lg-3 d-none d-lg-block">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary py-2">
+        <span class="small fw-semibold text-secondary">SESSION DATA</span>
+      </div>
+      <div class="card-body p-2 overflow-auto" id="session-context-panel">
+        <div class="text-secondary small text-center py-4">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: chat window -->
+  <div class="col-lg-9 d-flex flex-column" style="height:100%">
+    <div class="card bg-dark border-secondary flex-fill d-flex flex-column" style="overflow:hidden">
+      <!-- Chat history -->
+      <div class="flex-fill overflow-auto p-3" id="chat-history" style="display:flex;flex-direction:column;gap:.75rem">
+        <!-- Engineer intro message -->
+        <div class="chat-msg assistant">
+          <div class="chat-bubble">
+            <strong class="text-warning d-block mb-1"><i class="bi bi-robot me-1"></i>Race Engineer</strong>
+            Copy that. I've loaded your session data. I'm reviewing the telemetry now — what do you want to know? Ask me anything about lap times, cornering, braking, setup, or how to go faster.
+          </div>
+          <div class="chat-time text-secondary small mt-1">Ready</div>
+        </div>
+      </div>
+
+      <!-- Quick question chips -->
+      <div class="border-top border-secondary px-3 py-2 d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="How can we go faster?">Go faster?</button>
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="Where are we losing the most time?">Where losing time?</button>
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="Analyze our braking zones">Braking analysis</button>
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="Analyze our cornering — are we understeering or oversteering?">Cornering</button>
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="How is our driver consistency? What can they improve?">Consistency</button>
+        <button class="btn btn-sm btn-outline-secondary quick-q" data-q="Compare this kart to the other kart — what's different?">Compare karts</button>
+      </div>
+
+      <!-- Input -->
+      <div class="border-top border-secondary p-2 d-flex gap-2">
+        <textarea id="chat-input" class="form-control bg-dark border-secondary"
+          rows="2" placeholder="Ask the race engineer anything…"
+          style="resize:none;font-size:.9rem"></textarea>
+        <button id="chat-send" class="btn btn-warning px-3 align-self-end">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
+    <div class="d-flex justify-content-between mt-2">
+      <button id="clear-chat" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-trash me-1"></i>Clear History
+      </button>
+      <small class="text-secondary align-self-center">
+        <i class="bi bi-lock-fill me-1"></i>All data stays on this device
+      </small>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/ai_chat.js"></script>
+{% endblock %}

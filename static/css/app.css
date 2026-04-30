@@ -1,0 +1,110 @@
+/* ── Base ── */
+:root {
+  --bg-dark: #0d0d0d;
+  --bg-card: #111111;
+  --bg-plot: #0a0a0a;
+  --accent-teal: #00d4aa;
+  --accent-orange: #ff6b35;
+  --accent-yellow: #f39c12;
+  --text-dim: #888;
+  --border: #2a2a2a;
+}
+
+body {
+  background: var(--bg-dark);
+  color: #e0e0e0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.navbar { background: #050505 !important; }
+.card { background: var(--bg-card) !important; border-color: var(--border) !important; }
+.card-header { background: #0d0d0d !important; border-color: var(--border) !important; }
+
+/* ── Stat Cards ── */
+.stat-big {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  margin-top: .25rem;
+}
+.stat-label {
+  font-size: .6rem;
+  letter-spacing: .1em;
+  color: var(--text-dim);
+  margin-top: .2rem;
+}
+
+/* ── Charts ── */
+.chart-label {
+  font-size: .7rem;
+  letter-spacing: .05em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: .25rem;
+  padding-left: .25rem;
+}
+
+.js-plotly-plot .plotly .modebar { display: none !important; }
+
+/* ── Session cards ── */
+.session-card:hover { border-color: var(--accent-teal) !important; }
+
+/* ── Chat ── */
+.chat-msg { display: flex; flex-direction: column; max-width: 85%; }
+.chat-msg.user { align-self: flex-end; align-items: flex-end; }
+.chat-msg.assistant { align-self: flex-start; align-items: flex-start; }
+
+.chat-bubble {
+  padding: .65rem .9rem;
+  border-radius: 12px;
+  line-height: 1.6;
+  font-size: .9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-msg.user .chat-bubble {
+  background: #1a3a2a;
+  border: 1px solid #2a5a3a;
+  color: #d0f0e0;
+}
+.chat-msg.assistant .chat-bubble {
+  background: #1a1a0d;
+  border: 1px solid #3a3a1a;
+  color: #f0f0d0;
+}
+
+/* Typing indicator */
+.typing-dots span {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--accent-yellow);
+  border-radius: 50%;
+  margin: 0 2px;
+  animation: blink 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%,80%,100% { opacity:.2 } 40% { opacity:1 } }
+
+/* ── Replay ── */
+#replay-scrubber::-webkit-slider-thumb { background: var(--accent-teal); }
+#replay-scrubber::-moz-range-thumb { background: var(--accent-teal); border: none; }
+#replay-scrubber { accent-color: var(--accent-teal); }
+
+/* ── Kart color dots ── */
+.kart-1-color { color: var(--accent-teal); }
+.kart-2-color { color: var(--accent-orange); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ── Mobile tweaks ── */
+@media (max-width: 576px) {
+  .stat-big { font-size: 1.1rem; }
+  .card-header .small { display: none; }
+}

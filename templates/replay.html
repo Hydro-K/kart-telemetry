@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Replay{% endblock %}
+
+{% block nav_extra %}
+<a href="/dashboard/{{ session_id }}" class="btn btn-sm btn-outline-secondary ms-2">
+  <i class="bi bi-graph-up me-1"></i>Dashboard
+</a>
+{% endblock %}
+
+{% block content %}
+<div id="session-id" data-id="{{ session_id }}" class="d-none"></div>
+
+<!-- Header -->
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+  <a href="/dashboard/{{ session_id }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <div>
+    <div id="replay-kart-badge" class="badge mb-1" style="font-size:.7rem"></div>
+    <h5 id="replay-title" class="mb-0 fw-bold">Replay</h5>
+  </div>
+</div>
+
+<!-- Controls bar -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-body p-2 d-flex align-items-center gap-3 flex-wrap">
+    <!-- Recording selector -->
+    <div class="d-flex align-items-center gap-2">
+      <label class="small text-secondary mb-0">Recording</label>
+      <select id="replay-recording-select" class="form-select form-select-sm bg-dark border-secondary" style="width:auto"></select>
+    </div>
+    <!-- Lap selector with prev/next -->
+    <div class="d-flex align-items-center gap-1">
+      <button id="replay-prev-lap" class="btn btn-sm btn-outline-secondary" title="Previous Lap"><i class="bi bi-chevron-left"></i></button>
+      <label class="small text-secondary mb-0 mx-1">Lap</label>
+      <select id="replay-lap-select" class="form-select form-select-sm bg-dark border-secondary" style="width:auto"></select>
+      <button id="replay-next-lap" class="btn btn-sm btn-outline-secondary" title="Next Lap"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <!-- Play controls -->
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button id="replay-restart" class="btn btn-sm btn-outline-secondary" title="Restart"><i class="bi bi-skip-backward-fill"></i></button>
+      <button id="replay-play" class="btn btn-sm btn-success px-3"><i class="bi bi-play-fill"></i> Play</button>
+      <!-- Speed -->
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-secondary speed-btn" data-speed="0.5">0.5×</button>
+        <button class="btn btn-outline-secondary speed-btn active" data-speed="1">1×</button>
+        <button class="btn btn-outline-secondary speed-btn" data-speed="2">2×</button>
+        <button class="btn btn-outline-secondary speed-btn" data-speed="5">5×</button>
+        <button class="btn btn-outline-secondary speed-btn" data-speed="10">10×</button>
+      </div>
+    </div>
+  </div>
+  <!-- Scrubber -->
+  <div class="px-3 pb-2 d-flex align-items-center gap-3">
+    <span id="replay-time-current" class="small text-secondary" style="min-width:3.5rem">0.000s</span>
+    <input type="range" id="replay-scrubber" class="form-range flex-fill" min="0" value="0" step="1">
+    <span id="replay-time-total" class="small text-secondary" style="min-width:3.5rem">0.000s</span>
+  </div>
+</div>
+
+<!-- Live handling flag banner -->
+<div id="handling-flag" class="d-none rounded px-3 py-2 mb-3 d-flex align-items-center gap-3 fw-semibold" style="transition:background .2s">
+  <span id="flag-icon" style="font-size:1.4rem">🚩</span>
+  <div>
+    <div id="flag-title" style="font-size:1rem"></div>
+    <div id="flag-desc" class="small fw-normal opacity-75"></div>
+  </div>
+</div>
+
+<!-- Main replay area -->
+<div class="row g-3 mb-3">
+  <!-- Track map (left, large) -->
+  <div class="col-lg-7">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="fw-semibold">Live Track Position</span>
+        <small class="text-secondary ms-2">Colored trail = speed history (red=fast, blue=slow)</small>
+      </div>
+      <div class="card-body p-1">
+        <div id="replay-track-map" style="height:400px"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Gauges (right) -->
+  <div class="col-lg-5">
+    <div class="row g-3 h-100">
+      <!-- Speed gauge -->
+      <div class="col-6 col-lg-12">
+        <div class="card bg-dark border-secondary">
+          <div class="card-header border-secondary py-1">
+            <span class="small fw-semibold">Speed</span>
+          </div>
+          <div class="card-body p-1">
+            <div id="replay-speed-gauge" style="height:180px"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Live G-G dot -->
+      <div class="col-6 col-lg-12">
+        <div class="card bg-dark border-secondary">
+          <div class="card-header border-secondary py-1">
+            <span class="small fw-semibold">Live G-Force</span>
+            <small class="text-secondary ms-2">Dot position = current grip usage</small>
+          </div>
+          <div class="card-body p-1">
+            <div id="replay-gg-live" style="height:180px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scrolling traces -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Live Data Traces</span>
+    <small class="text-secondary ms-2">Last 5 seconds</small>
+  </div>
+  <div class="card-body p-2">
+    <div class="row g-2">
+      <div class="col-lg-4">
+        <div class="chart-label">Speed (mph)</div>
+        <div id="replay-speed-trace" style="height:140px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Longitudinal G (Braking / Acceleration)</div>
+        <div id="replay-inlineg-trace" style="height:140px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Lateral G (Left / Right Cornering)</div>
+        <div id="replay-lateralg-trace" style="height:140px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Handling events log -->
+<div class="card bg-dark border-secondary mb-4">
+  <div class="card-header border-secondary d-flex align-items-center justify-content-between">
+    <span class="fw-semibold"><i class="bi bi-flag-fill me-2 text-warning"></i>Handling Events</span>
+    <small class="text-secondary">Click any event to jump to that moment</small>
+  </div>
+  <div class="card-body p-0" style="max-height:200px;overflow-y:auto">
+    <div id="handling-events-list" class="list-group list-group-flush">
+      <div class="list-group-item bg-dark text-secondary small py-2 px-3" id="no-events-msg">
+        No understeer or oversteer events detected in this lap.
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/replay.js"></script>
+{% endblock %}

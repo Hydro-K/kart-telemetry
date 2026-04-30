@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block nav_extra %}
+<button class="btn btn-sm btn-outline-success ms-2" id="nav-upload-btn">
+  <i class="bi bi-upload me-1"></i>Upload Recording
+</button>
+<a href="/ai/{{ session_id }}" class="btn btn-sm btn-outline-warning ms-1">
+  <i class="bi bi-robot me-1"></i>AI Engineer
+</a>
+<a href="/replay/{{ session_id }}" class="btn btn-sm btn-outline-info ms-1">
+  <i class="bi bi-play-circle me-1"></i>Replay
+</a>
+{% endblock %}
+
+{% block content %}
+<div id="session-id" data-id="{{ session_id }}" class="d-none"></div>
+
+<!-- Header -->
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+  <a href="/" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <div>
+    <div id="session-kart-badge" class="badge mb-1" style="font-size:.7rem"></div>
+    <h5 id="session-title" class="mb-0 fw-bold">Loading…</h5>
+  </div>
+  <div class="ms-auto d-flex gap-2 flex-wrap">
+    <a href="/lap-compare/{{ session_id }}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-layers me-1"></i>Lap Compare
+    </a>
+  </div>
+</div>
+
+<!-- ── Row 1: Stat Cards ── -->
+<div class="row g-3 mb-3" id="stat-cards">
+  <div class="col-6 col-md-4 col-xl">
+    <div class="card bg-dark border-secondary h-100 text-center p-2">
+      <div id="stat-best-lap" class="stat-big" style="color:#00d4aa">--:--</div>
+      <div class="stat-label">BEST LAP</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl">
+    <div class="card bg-dark border-secondary h-100 text-center p-2">
+      <div id="stat-avg-lap" class="stat-big">--:--</div>
+      <div class="stat-label">AVG LAP</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl">
+    <div class="card bg-dark border-secondary h-100 text-center p-2">
+      <div id="stat-laps" class="stat-big">--</div>
+      <div class="stat-label">LAPS</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl">
+    <div class="card bg-dark border-secondary h-100 text-center p-2">
+      <div id="stat-consistency" class="stat-big">--%</div>
+      <div class="stat-label">CONSISTENCY</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl">
+    <div class="card bg-dark border-secondary h-100 text-center p-2">
+      <div id="stat-top-speed" class="stat-big">-- mph</div>
+      <div class="stat-label">TOP SPEED</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 2: Lap Times + Lap Progression (tabbed) ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary d-flex align-items-center gap-3 flex-wrap">
+    <ul class="nav nav-pills" id="lapChartTabs">
+      <li class="nav-item"><button class="nav-link active" data-target="lap-times-chart">Lap Times</button></li>
+      <li class="nav-item"><button class="nav-link" data-target="lap-progression-chart">Lap Progression</button></li>
+    </ul>
+    <span class="text-secondary small ms-auto">Click a bar to select that lap for traces below</span>
+  </div>
+  <div class="card-body p-2">
+    <div id="lap-times-chart" style="height:220px"></div>
+    <div id="lap-progression-chart" class="d-none" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- ── Row 3: Speed Trace ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary d-flex align-items-center gap-3 flex-wrap">
+    <span class="fw-semibold">Speed Trace</span>
+    <small class="text-secondary">How fast the kart is going throughout the lap</small>
+    <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
+      <select id="speed-lap-select" class="form-select form-select-sm bg-dark border-secondary" style="width:auto"></select>
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-secondary active" id="xaxis-time">Time</button>
+        <button class="btn btn-outline-secondary" id="xaxis-dist">Distance</button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-2">
+    <div id="speed-trace-chart" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- ── Row 4: Track Map + G-G Diagram ── -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-7">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="fw-semibold">Track Map</span>
+        <small class="text-secondary ms-2">GPS path colored by speed — red = fast, blue = slow</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="track-map-chart" style="height:320px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="fw-semibold">Traction Circle (G-G Diagram)</span>
+        <small class="text-secondary ms-2">How hard the kart is working — closer to edge = better</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="gg-chart" style="height:320px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 5: Zone Pie + Speed Histogram ── -->
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="fw-semibold">Time in Each Zone</span>
+        <small class="text-secondary ms-2 d-block">Best lap — where time is being spent</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="zone-pie-chart" style="height:250px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card bg-dark border-secondary h-100">
+      <div class="card-header border-secondary">
+        <span class="fw-semibold">Speed Distribution</span>
+        <small class="text-secondary ms-2">How much of the session was spent at each speed</small>
+      </div>
+      <div class="card-body p-2">
+        <div id="speed-histogram-chart" style="height:250px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 6: Best Lap Breakdown ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Best Lap Breakdown</span>
+    <small class="text-secondary ms-2">Speed with colored zones — <span style="color:#e74c3c">■ Braking</span> <span style="color:#f39c12">■ Cornering</span> <span style="color:#2ecc71">■ Acceleration</span> <span style="color:#555">■ Coasting</span></small>
+  </div>
+  <div class="card-body p-2">
+    <div id="best-lap-breakdown-chart" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- ── Row 7: G-Force Traces ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary d-flex align-items-center gap-2 flex-wrap">
+    <span class="fw-semibold">G-Force Traces</span>
+    <small class="text-secondary">Raw forces on the kart — positive = forward/right, negative = braking/left</small>
+    <select id="gforce-lap-select" class="form-select form-select-sm bg-dark border-secondary ms-auto" style="width:auto"></select>
+  </div>
+  <div class="card-body p-2">
+    <div class="row g-2">
+      <div class="col-lg-4">
+        <div class="chart-label">Longitudinal G (Braking / Acceleration)</div>
+        <div id="inline-g-chart" style="height:180px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Lateral G (Left / Right Cornering)</div>
+        <div id="lateral-g-chart" style="height:180px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Vertical G (Bumps / Track Surface)</div>
+        <div id="vertical-g-chart" style="height:180px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 8: Rotation Rate Traces ── -->
+<div class="card bg-dark border-secondary mb-3">
+  <div class="card-header border-secondary d-flex align-items-center gap-2 flex-wrap">
+    <span class="fw-semibold">Rotation Rates</span>
+    <small class="text-secondary">How the kart is rotating — useful for chassis setup</small>
+    <select id="rotation-lap-select" class="form-select form-select-sm bg-dark border-secondary ms-auto" style="width:auto"></select>
+  </div>
+  <div class="card-body p-2">
+    <div class="row g-2">
+      <div class="col-lg-4">
+        <div class="chart-label">Yaw Rate — Left/Right Rotation (deg/s)</div>
+        <div id="yaw-chart" style="height:180px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Roll Rate — Body Roll (deg/s)</div>
+        <div id="roll-chart" style="height:180px"></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="chart-label">Pitch Rate — Nose Pitch (deg/s)</div>
+        <div id="pitch-chart" style="height:180px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 9: Battery ── -->
+<div class="card bg-dark border-secondary mb-4">
+  <div class="card-header border-secondary">
+    <span class="fw-semibold">Logger Battery Voltage</span>
+    <small class="text-secondary ms-2">AiM device internal battery — not the kart's main EV pack</small>
+  </div>
+  <div class="card-body p-2">
+    <div id="battery-chart" style="height:120px"></div>
+  </div>
+</div>
+
+<!-- Upload recording modal (reused from index) -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title"><i class="bi bi-upload text-success me-2"></i>Upload Recording</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary small">Add another AiM recording to this session. All laps will be pooled together.</p>
+        <div id="drop-zone" class="border border-secondary rounded p-4 text-center mb-3" style="border-style:dashed!important;cursor:pointer">
+          <i class="bi bi-cloud-upload fs-2 text-secondary"></i>
+          <div class="mt-2 text-secondary">Drag & drop or click to select</div>
+          <input type="file" id="upload-file-input" accept=".zip,.xrk" class="d-none">
+        </div>
+        <div id="upload-progress" class="d-none">
+          <div class="progress mb-2"><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%"></div></div>
+          <div class="small text-center text-secondary">Uploading and analyzing…</div>
+        </div>
+        <div id="upload-result" class="d-none alert alert-success"></div>
+        <div id="upload-error" class="d-none alert alert-danger"></div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
