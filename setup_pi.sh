@@ -19,8 +19,7 @@ echo "======================================================"
 echo "[1/8] Installing system packages..."
 apt-get update -qq
 apt-get install -y python3-pip python3-venv hostapd dnsmasq \
-    sqlite3 iptables-persistent git curl \
-    libarrow-dev libparquet-dev  # needed to build pyarrow (required by libxrk)
+    sqlite3 iptables-persistent git curl
 
 # ── 2. Python virtual environment ───────────────────────────
 echo "[2/8] Creating Python venv and installing dependencies..."
