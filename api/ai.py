@@ -152,7 +152,10 @@ def chat():
                 yield f"data: {json.dumps({'done': True})}\n\n"
                 _save_exchange(user_message, ''.join(full_reply))
             except requests.exceptions.ConnectionError:
-                yield f"data: {json.dumps({'error': 'Ollama is offline. Make sure it is running on this device.'})}\n\n"
+                yield f"data: {json.dumps({'error': 'Ollama is offline. Run: ollama serve'})}\n\n"
+                db.close()
+            except requests.exceptions.Timeout:
+                yield f"data: {json.dumps({'error': 'Ollama timed out loading the model. Try again — it will be faster once loaded.'})}\n\n"
                 db.close()
             except Exception as e:
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
@@ -164,6 +167,7 @@ def chat():
             headers={
                 'Cache-Control': 'no-cache',
                 'X-Accel-Buffering': 'no',
+                'X-Content-Type-Options': 'nosniff',
             }
         )
     else:

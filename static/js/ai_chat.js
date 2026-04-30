@@ -104,8 +104,8 @@ async function sendMessage(text) {
 
     // Remove thinking bubble, add streaming assistant bubble
     thinkingEl.remove();
-    const msgEl = appendMessage('assistant', '', true);
-    const bubble = msgEl.querySelector('.chat-bubble');
+    const msgEl = appendMessage('assistant', '');
+    const textSpan = msgEl.querySelector('.msg-text');
     let fullText = '';
 
     const reader = response.body.getReader();
@@ -123,46 +123,54 @@ async function sendMessage(text) {
         try {
           const chunk = JSON.parse(line.slice(6));
           if (chunk.error) {
-            bubble.textContent = '⚠ ' + chunk.error;
+            textSpan.innerText = '⚠ ' + chunk.error;
             break;
           }
           if (chunk.token) {
             fullText += chunk.token;
-            bubble.textContent = fullText;
+            textSpan.innerText = fullText;
             scrollChat();
           }
         } catch {}
       }
     }
   } catch (e) {
-    thinkingEl.remove();
-    appendMessage('assistant', '⚠ Error: ' + e.message);
+    thinkingEl?.remove();
+    appendMessage('assistant', '⚠ Could not reach AI: ' + e.message);
   } finally {
     sendBtn.disabled = false;
     chatInput.focus();
   }
 }
 
-function appendMessage(role, text, streaming = false) {
+function appendMessage(role, text) {
   const div = document.createElement('div');
   div.className = `chat-msg ${role}`;
-  const label = role === 'assistant'
-    ? '<strong class="text-warning d-block mb-1" style="font-size:.8rem"><i class="bi bi-robot me-1"></i>Race Engineer</strong>'
-    : '';
-  div.innerHTML = `
-    <div class="chat-bubble">${label}<span class="msg-text">${escapeHtml(text)}</span></div>
-    <div class="chat-time text-secondary" style="font-size:.7rem;margin-top:.25rem">${new Date().toLocaleTimeString()}</div>
-  `;
-  // For streaming, return the element so we can update it
-  const bubble = div.querySelector('.msg-text');
-  if (streaming) {
-    // Allow raw text update without escaping during stream
-    bubble.className = 'msg-text streaming';
-    Object.defineProperty(bubble, 'textContent', {
-      set(v) { bubble.innerText = v; },
-      get() { return bubble.innerText; },
-    });
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+
+  if (role === 'assistant') {
+    const label = document.createElement('strong');
+    label.className = 'text-warning d-block mb-1';
+    label.style.fontSize = '.8rem';
+    label.innerHTML = '<i class="bi bi-robot me-1"></i>Race Engineer';
+    bubble.appendChild(label);
   }
+
+  const textSpan = document.createElement('span');
+  textSpan.className = 'msg-text';
+  textSpan.style.whiteSpace = 'pre-wrap';  // preserve line breaks from model
+  textSpan.innerText = text;
+  bubble.appendChild(textSpan);
+
+  const timeDiv = document.createElement('div');
+  timeDiv.className = 'chat-time text-secondary';
+  timeDiv.style.cssText = 'font-size:.7rem;margin-top:.25rem';
+  timeDiv.textContent = new Date().toLocaleTimeString();
+
+  div.appendChild(bubble);
+  div.appendChild(timeDiv);
   chatHistory.appendChild(div);
   scrollChat();
   return div;
@@ -171,12 +179,11 @@ function appendMessage(role, text, streaming = false) {
 function appendThinking() {
   const div = document.createElement('div');
   div.className = 'chat-msg assistant';
-  div.innerHTML = `
-    <div class="chat-bubble">
-      <strong class="text-warning d-block mb-1" style="font-size:.8rem"><i class="bi bi-robot me-1"></i>Race Engineer</strong>
-      <span class="typing-dots"><span></span><span></span><span></span></span>
-      <span class="text-secondary small ms-2">Reviewing the data…</span>
-    </div>`;
+  div.innerHTML = `<div class="chat-bubble">
+    <strong class="text-warning d-block mb-1" style="font-size:.8rem"><i class="bi bi-robot me-1"></i>Race Engineer</strong>
+    <span class="typing-dots"><span></span><span></span><span></span></span>
+    <span class="text-secondary small ms-2">Reviewing the data…</span>
+  </div>`;
   chatHistory.appendChild(div);
   scrollChat();
   return div;

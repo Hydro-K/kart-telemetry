@@ -8,7 +8,7 @@ MAX_UPLOAD_MB = 100
 
 OLLAMA_URL = os.environ.get('OLLAMA_URL', 'http://localhost:11434')
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'phi3:mini')
-OLLAMA_TIMEOUT = 120
+OLLAMA_TIMEOUT = 300  # 5 min — first load of a large model can take 10-30s before tokens start
 
 # Unit conversion constants
 MS_TO_MPH = 2.23694
