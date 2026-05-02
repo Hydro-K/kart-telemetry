@@ -21,8 +21,9 @@ CORNERING_G_THRESHOLD = 0.3
 OUTLIER_LAP_STD_MULT = 2.0
 
 # Minimum lap time to count as a valid racing lap (filters install/warmup laps)
-# AiM records a partial "lap 1" whenever the logger starts mid-lap
-MIN_LAP_TIME_S = 30.0
+# AiM records partial laps at logger start/stop — 20s catches those without
+# filtering real race laps on short/fast circuits (real laps are typically 27s+)
+MIN_LAP_TIME_S = 20.0
 
 # GPS quality filter
 MAX_GPS_ACCURACY_M = 2.0

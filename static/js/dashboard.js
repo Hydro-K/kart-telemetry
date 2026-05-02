@@ -408,5 +408,103 @@ async function dashboardUpload(file) {
   }
 }
 
+// ── Simulations ──────────────────────────────────────────────────────────────
+
+async function loadTheoreticalBest() {
+  try {
+    const d = await apiFetch(`/api/analysis/${SESSION_ID}/theoretical_best`);
+    document.getElementById('sim-theo-best').textContent   = d.theoretical_best_formatted;
+    document.getElementById('sim-actual-best').textContent = d.actual_best_formatted;
+    document.getElementById('sim-gap').textContent         = d.time_left_formatted;
+
+    // Sector chart — bar chart of best sector times
+    if (d.sector_chart && d.sector_chart.length > 0) {
+      const sectors   = d.sector_chart.map(s => s.sector);
+      const times     = d.sector_chart.map(s => s.best_time);
+      const lapColors = d.sector_chart.map(s => {
+        // Color bars by which lap contributed — cycle through palette
+        const palette = ['#00d4aa','#ff6b35','#f39c12','#3498db','#9b59b6','#e74c3c'];
+        return palette[(s.best_lap || 0) % palette.length];
+      });
+      Plotly.newPlot('sim-sector-chart', [{
+        x: sectors, y: times, type: 'bar',
+        marker: { color: lapColors },
+        hovertemplate: 'Sector %{x}<br>Best: %{y:.3f}s<extra></extra>',
+      }], basePlotLayout({
+        title: { text: 'Best Time per Mini-Sector (50 sectors)', font: { size: 11, color: '#888' }, x: 0 },
+        xaxis: { title: 'Sector #' },
+        yaxis: { title: 'Time (s)' },
+        margin: { t: 30, l: 50, r: 20, b: 40 },
+        showlegend: false,
+      }), PLOT_CONFIG);
+    }
+
+    // Contributors text
+    if (d.top_contributing_laps && d.top_contributing_laps.length) {
+      const contribText = d.top_contributing_laps
+        .map(c => `Lap ${c.global_lap} (${c.sectors_contributed} sectors)`)
+        .join(' · ');
+      document.getElementById('sim-contributors').textContent =
+        `Best sectors from: ${contribText}`;
+    }
+  } catch (e) {
+    document.getElementById('sim-theo-best').textContent = 'N/A';
+    console.warn('Theoretical best error:', e);
+  }
+}
+
+async function runRaceSim() {
+  const laps    = document.getElementById('sim-race-laps').value;
+  const opps    = document.getElementById('sim-opponents').value;
+  const delta   = document.getElementById('sim-opp-delta').value;
+  const btn     = document.getElementById('sim-run-btn');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Simulating…';
+
+  try {
+    const d = await apiFetch(
+      `/api/analysis/${SESSION_ID}/race_sim?laps=${laps}&opponents=${opps}&opp_delta=${delta}&trials=2000`
+    );
+    document.getElementById('sim-race-results').classList.remove('d-none');
+
+    document.getElementById('sim-exp-pos').textContent    = `P${Math.round(d.expected_position)}`;
+    const p1 = d.finish_probabilities.find(p => p.position === 1);
+    document.getElementById('sim-win-pct').textContent    = p1 ? `Win probability: ${p1.probability}%` : '';
+    document.getElementById('sim-race-time-median').textContent = d.projected_race_time.median;
+    document.getElementById('sim-race-time-range').textContent  =
+      `${d.projected_race_time.best_case} – ${d.projected_race_time.worst_case}`;
+    document.getElementById('sim-our-pace').textContent   = `${d.our_mean_formatted} avg lap`;
+    document.getElementById('sim-opp-pace').textContent   =
+      `Opp avg: ${fmtLap(d.opponent_mean_lap)} (${delta >= 0 ? '+' : ''}${parseFloat(delta).toFixed(1)}s/lap)`;
+
+    // Finish position probability bar chart
+    const positions = d.finish_probabilities.map(p => `P${p.position}`);
+    const probs     = d.finish_probabilities.map(p => p.probability);
+    const barColors = d.finish_probabilities.map(p =>
+      p.position === 1 ? '#f39c12' : p.position <= 2 ? '#00d4aa' : '#555'
+    );
+    Plotly.newPlot('sim-position-chart', [{
+      x: positions, y: probs, type: 'bar',
+      marker: { color: barColors },
+      text: probs.map(p => `${p}%`), textposition: 'outside',
+      hovertemplate: '%{x}: %{y:.1f}%<extra></extra>',
+    }], basePlotLayout({
+      title: { text: `Finish Position Probability — ${laps} laps vs ${opps} opponents`, font: { size: 11, color: '#888' }, x: 0 },
+      xaxis: { title: 'Finish Position' },
+      yaxis: { title: 'Probability (%)', range: [0, Math.max(...probs) * 1.3] },
+      margin: { t: 30, l: 50, r: 20, b: 50 },
+      showlegend: false,
+    }), PLOT_CONFIG);
+  } catch (e) {
+    console.error('Race sim error:', e);
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Run Simulation';
+  }
+}
+
+document.getElementById('sim-run-btn')?.addEventListener('click', runRaceSim);
+
 // ── Init ──
 loadOverview().catch(console.error);
+loadTheoreticalBest().catch(console.error);

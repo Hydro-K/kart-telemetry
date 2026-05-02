@@ -222,6 +222,112 @@
   </div>
 </div>
 
+<!-- ── Simulations ── -->
+<div class="card bg-dark border-secondary mb-4">
+  <div class="card-header border-secondary d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <span class="fw-semibold"><i class="bi bi-cpu-fill me-2 text-warning"></i>Simulations</span>
+      <small class="text-secondary ms-2">Theoretical lap analysis &amp; race outcome predictions</small>
+    </div>
+  </div>
+  <div class="card-body p-3">
+
+    <!-- Theoretical Best Lap -->
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h6 class="text-secondary small fw-semibold text-uppercase mb-2">Theoretical Best Lap</h6>
+        <p class="small text-secondary mb-2">
+          Splits the circuit into 50 mini-sectors and finds the fastest time each sector was driven across all laps.
+          Summing those gives the lap you <em>could</em> run if you strung together your best sectors.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-black border-secondary text-center p-3">
+          <div class="small text-secondary mb-1">THEORETICAL BEST</div>
+          <div id="sim-theo-best" class="fw-bold" style="font-size:1.8rem;color:#f39c12">--:--</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-black border-secondary text-center p-3">
+          <div class="small text-secondary mb-1">ACTUAL BEST</div>
+          <div id="sim-actual-best" class="fw-bold" style="font-size:1.8rem;color:#00d4aa">--:--</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-black border-secondary text-center p-3">
+          <div class="small text-secondary mb-1">TIME LEFT ON TABLE</div>
+          <div id="sim-gap" class="fw-bold" style="font-size:1.8rem;color:#e74c3c">--</div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div id="sim-sector-chart" style="height:180px"></div>
+        <div id="sim-contributors" class="small text-secondary mt-1"></div>
+      </div>
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- Race Simulation -->
+    <div>
+      <h6 class="text-secondary small fw-semibold text-uppercase mb-2">Race Outcome Simulation (Monte Carlo)</h6>
+      <p class="small text-secondary mb-3">
+        Uses your actual lap time distribution (mean + variability) to simulate thousands of races.
+        Adjust race length and opponent pace to see projected finish positions.
+      </p>
+      <div class="row g-3 mb-3">
+        <div class="col-auto">
+          <label class="form-label small text-secondary mb-1">Race Laps</label>
+          <input type="number" id="sim-race-laps" class="form-control form-control-sm bg-dark border-secondary text-white"
+            value="20" min="1" max="100" style="width:80px">
+        </div>
+        <div class="col-auto">
+          <label class="form-label small text-secondary mb-1">Opponents</label>
+          <input type="number" id="sim-opponents" class="form-control form-control-sm bg-dark border-secondary text-white"
+            value="3" min="1" max="9" style="width:80px">
+        </div>
+        <div class="col-auto">
+          <label class="form-label small text-secondary mb-1">Opponent Δ (sec/lap)</label>
+          <input type="number" id="sim-opp-delta" class="form-control form-control-sm bg-dark border-secondary text-white"
+            value="0" step="0.1" min="-5" max="10" style="width:100px">
+          <div class="small text-secondary mt-1">+ = slower, − = faster</div>
+        </div>
+        <div class="col-auto d-flex align-items-end">
+          <button id="sim-run-btn" class="btn btn-warning btn-sm px-3">
+            <i class="bi bi-play-fill me-1"></i>Run Simulation
+          </button>
+        </div>
+      </div>
+      <div id="sim-race-results" class="d-none">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="card bg-black border-secondary text-center p-3">
+              <div class="small text-secondary mb-1">EXPECTED FINISH</div>
+              <div id="sim-exp-pos" class="fw-bold" style="font-size:1.8rem;color:#f39c12">P--</div>
+              <div id="sim-win-pct" class="small text-secondary mt-1"></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-black border-secondary text-center p-3">
+              <div class="small text-secondary mb-1">PROJECTED RACE TIME</div>
+              <div id="sim-race-time-median" class="fw-bold" style="font-size:1.1rem;color:#00d4aa"></div>
+              <div id="sim-race-time-range" class="small text-secondary mt-1"></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-black border-secondary text-center p-3">
+              <div class="small text-secondary mb-1">OUR PACE</div>
+              <div id="sim-our-pace" class="fw-bold" style="font-size:1.1rem;color:#00d4aa"></div>
+              <div id="sim-opp-pace" class="small text-secondary mt-1"></div>
+            </div>
+          </div>
+        </div>
+        <div id="sim-position-chart" style="height:220px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- Upload recording modal (reused from index) -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
   <div class="modal-dialog">
